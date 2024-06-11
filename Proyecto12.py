@@ -20,9 +20,9 @@ def Menu():
         6. App para Servicios Web
         7. Salir
         """)
-        op = int(input("Introdueix una opcio: "))
+        op = int(input("Introduce una Opción: "))
         if op < 1 or op > 7:
-            print("Opcio no valida, torni a elegir una opcio \n")
+            print("Opción no valida \n")
         else:
             return op
 
