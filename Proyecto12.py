@@ -16,7 +16,7 @@ def Menu():
         2. Fichero que se guarda auto.
         3. El Juego de la Memoria
         4. App de Clases y Herencias
-        5. App de Big Data
+        5. Scrapping de la Bolsa
         6. App para Servicios Web
         7. Salir
         """)
@@ -25,7 +25,6 @@ def Menu():
             print("Opcio no valida, torni a elegir una opcio \n")
         else:
             return op
-
 
 # Programa Principal
 op = 1
