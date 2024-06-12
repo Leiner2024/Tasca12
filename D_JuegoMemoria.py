@@ -4,194 +4,175 @@ import math
 import time
 import random
 
+# Empezar Pygame
+pygame.init()
+pygame.font.init()
+pygame.mixer.init()
+
+# Variables y configuraciones
+ALTURA_BOTON = 45
+MEDIDA_CUADRO = 180
+IMAGEN_OCULTA = pygame.image.load("PNGs_JuegoMemoria/oculta.png")
+SEGUNDOS_MOSTRAR_PIEZA = 1
+
+# Colores
+CAVERN_PINK = (231, 195, 196)
+PAARL = (157, 91, 42)
+
+# Sonidos
+SONIDO_FONDO = pygame.mixer.Sound("WAVs_JuegoMemoria/fondo.wav")
+SONIDO_CLIC = pygame.mixer.Sound("WAVs_JuegoMemoria/clic.wav")
+SONIDO_EXITO = pygame.mixer.Sound("WAVs_JuegoMemoria/ganador.wav")
+SONIDO_FRACASO = pygame.mixer.Sound("WAVs_JuegoMemoria/equivocado.wav")
+SONIDO_VOLTEAR = pygame.mixer.Sound("WAVs_JuegoMemoria/voltear.wav")
+
+# Fuente para el botón
+TAMANIO_FUENTE = 24
+FUENTE = pygame.font.SysFont("Times New Roman", TAMANIO_FUENTE)
+
+# Clase Cuadro
+class Cuadro:
+    def __init__(self, fuente_imagen):
+        # Al crear un cuadro, se muestra y no está descubierto
+        self.mostrar = True
+        self.descubierto = False
+        self.fuente_imagen = fuente_imagen
+        self.imagen_real = pygame.image.load(fuente_imagen)
+
+# Funciones del juego
+def ocultar_todos_los_cuadros(cuadros):
+    # Oculta todos los cuadros
+    for fila in cuadros:
+        for cuadro in fila:
+            cuadro.mostrar = False
+            cuadro.descubierto = False
+
+def aleatorizar_cuadros(cuadros):
+    # Mezcla los cuadros al azar
+    cantidad_filas = len(cuadros)
+    cantidad_columnas = len(cuadros[0])
+    for y in range(cantidad_filas):
+        for x in range(cantidad_columnas):
+            x_aleatorio = random.randint(0, cantidad_columnas - 1)
+            y_aleatorio = random.randint(0, cantidad_filas - 1)
+            cuadro_temporal = cuadros[y][x]
+            cuadros[y][x] = cuadros[y_aleatorio][x_aleatorio]
+            cuadros[y_aleatorio][x_aleatorio] = cuadro_temporal
+
+def gana(cuadros):
+    # Verifica si todos los cuadros están descubiertos
+    return all(cuadro.descubierto for fila in cuadros for cuadro in fila)
+
+def reiniciar_juego():
+    # Reinicia el juego
+    global juego_iniciado
+    juego_iniciado = False
+
+def iniciar_juego(cuadros):
+    # Inicia el juego, mezclando y ocultando los cuadros
+    pygame.mixer.Sound.play(SONIDO_CLIC)
+    for _ in range(3):
+        aleatorizar_cuadros(cuadros)
+    ocultar_todos_los_cuadros(cuadros)
+    return True
+
+# Función principal
 def main():
     print("Se está ejecutando el módulo D, Juego de Memoria")
-    # Inicialización de Pygame
-    pygame.init()
-    pygame.font.init()
-    pygame.mixer.init()
 
-    # Variables y configuraciones
-    altura_boton = 45
-    medida_cuadro = 180
-    nombre_imagen_oculta = "PNGs_JuegoMemoria/oculta.png"
-    imagen_oculta = pygame.image.load(nombre_imagen_oculta)
-    segundos_mostrar_pieza = 1
-
-    # Clase Cuadro
-    class Cuadro:
-        def __init__(self, fuente_imagen):
-            self.mostrar = True
-            self.descubierto = False
-            self.fuente_imagen = fuente_imagen
-            self.imagen_real = pygame.image.load(fuente_imagen)
-
-    # Todo el juego; un arreglo de objetos Cuadro
-    cuadros = [
-        [Cuadro("PNGs_JuegoMemoria/coco.png"), Cuadro("PNGs_JuegoMemoria/coco.png"),
-        Cuadro("PNGs_JuegoMemoria/manzana.png"), Cuadro("PNGs_JuegoMemoria/manzana.png")],
-        [Cuadro("PNGs_JuegoMemoria/limón.png"), Cuadro("PNGs_JuegoMemoria/limón.png"),
-        Cuadro("PNGs_JuegoMemoria/naranja.png"), Cuadro("PNGs_JuegoMemoria/naranja.png")],
-        [Cuadro("PNGs_JuegoMemoria/pera.png"), Cuadro("PNGs_JuegoMemoria/pera.png"),
-        Cuadro("PNGs_JuegoMemoria/piña.png"), Cuadro("PNGs_JuegoMemoria/piña.png")],
-        [Cuadro("PNGs_JuegoMemoria/plátano.png"), Cuadro("PNGs_JuegoMemoria/plátano.png"),
-        Cuadro("PNGs_JuegoMemoria/sandía.png"), Cuadro("PNGs_JuegoMemoria/sandía.png")],
-    ]
-
-    # Colores
-    color_blanco = (231, 195, 196)
-    color_gris = (242, 190, 87)
-    color_azul = (157, 91, 42)
-
-    # Sonidos
-    sonido_fondo = pygame.mixer.Sound("WAVs_JuegoMemoria/fondo.wav")
-    sonido_clic = pygame.mixer.Sound("WAVs_JuegoMemoria/clic.wav")
-    sonido_exito = pygame.mixer.Sound("WAVs_JuegoMemoria/ganador.wav")
-    sonido_fracaso = pygame.mixer.Sound("WAVs_JuegoMemoria/equivocado.wav")
-    sonido_voltear = pygame.mixer.Sound("WAVs_JuegoMemoria/voltear.wav")
-
-    # Ajustar tamaño de la pantalla
-    anchura_pantalla = 750  # Nuevo ancho de pantalla
-    altura_pantalla = 800  # Nuevo alto de pantalla
+    # Tamaño de la pantalla y configuración del botón
+    anchura_pantalla = 750
+    altura_pantalla = 800
     anchura_boton = anchura_pantalla
 
-    # Fuente para el botón
-    tamanio_fuente = 24
-    fuente = pygame.font.SysFont("Times New Roman", tamanio_fuente)
-    xFuente = int((anchura_boton / 2.2725) - (tamanio_fuente / 2))
-    yFuente = int(altura_pantalla - altura_boton + 10)
+    xFuente = int((anchura_boton / 2.2725) - (TAMANIO_FUENTE / 2))
+    yFuente = int(altura_pantalla - ALTURA_BOTON + 10)
 
-    # Botón
-    boton = pygame.Rect(0, altura_pantalla - altura_boton, anchura_boton, altura_pantalla)
+    # Configuración del botón
+    boton = pygame.Rect(0, altura_pantalla - ALTURA_BOTON, anchura_boton, ALTURA_BOTON)
 
-    # Banderas
+    # Variables del juego
     ultimos_segundos = None
     puede_jugar = True
     juego_iniciado = False
-    x1 = None
-    y1 = None
-    x2 = None
-    y2 = None
+    x1 = y1 = x2 = y2 = None
 
-    # Funciones
-    def ocultar_todos_los_cuadros():
-        for fila in cuadros:
-            for cuadro in fila:
-                cuadro.mostrar = False
-                cuadro.descubierto = False
+    # Crear y mezclar los cuadros del juego
+    imagenes = ["coco", "manzana", "limón", "naranja", "pera", "piña", "plátano", "sandía"]
+    cuadros = [Cuadro(f"PNGs_JuegoMemoria/{imagen}.png") for imagen in imagenes for _ in range(2)]
+    random.shuffle(cuadros)
+    cuadros = [cuadros[i:i + 4] for i in range(0, len(cuadros), 4)]
 
-    def aleatorizar_cuadros():
-        cantidad_filas = len(cuadros)
-        cantidad_columnas = len(cuadros[0])
-        for y in range(cantidad_filas):
-            for x in range(cantidad_columnas):
-                x_aleatorio = random.randint(0, cantidad_columnas - 1)
-                y_aleatorio = random.randint(0, cantidad_filas - 1)
-                cuadro_temporal = cuadros[y][x]
-                cuadros[y][x] = cuadros[y_aleatorio][x_aleatorio]
-                cuadros[y_aleatorio][x_aleatorio] = cuadro_temporal
-
-    def comprobar_si_gana():
-        if gana():
-            pygame.mixer.Sound.play(sonido_exito)
-            reiniciar_juego()
-
-    def gana():
-        for fila in cuadros:
-            for cuadro in fila:
-                if not cuadro.descubierto:
-                    return False
-        return True
-
-    def reiniciar_juego():
-        global juego_iniciado
-        juego_iniciado = False
-
-    def iniciar_juego():
-        pygame.mixer.Sound.play(sonido_clic)
-        global juego_iniciado
-        for i in range(3):
-            aleatorizar_cuadros()
-        ocultar_todos_los_cuadros()
-        juego_iniciado = True
-
-    # Iniciar pantalla
+    # Configuración de la pantalla del juego
     pantalla_juego = pygame.display.set_mode((anchura_pantalla, altura_pantalla))
     pygame.display.set_caption('Proyecto Python - Leiner X.')
-    pygame.mixer.Sound.play(sonido_fondo, -1)
+    pygame.mixer.Sound.play(SONIDO_FONDO, -1)
 
-    # Ciclo del juego
+    # Bucle principal del juego
     while True:
+        # Manejo de eventos de Pygame
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:  # Si se cierra la ventana
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN and puede_jugar:
-                xAbsoluto, yAbsoluto = event.pos
-                if boton.collidepoint(event.pos):
-                    if not juego_iniciado:
-                        iniciar_juego()
+            elif event.type == pygame.MOUSEBUTTONDOWN and puede_jugar:  # Si se hace clic con el ratón y se puede jugar
+                xAbsoluto, yAbsoluto = event.pos  # Obtener la posición del ratón
+                if boton.collidepoint(event.pos):  # Si se hace clic en el botón
+                    if not juego_iniciado:  # Si el juego no ha comenzado
+                        juego_iniciado = iniciar_juego(cuadros)  # Iniciar el juego
                 else:
-                    if not juego_iniciado:
-                        continue
-                    x = math.floor(xAbsoluto / medida_cuadro)
-                    y = math.floor(yAbsoluto / medida_cuadro)
-                    cuadro = cuadros[y][x]
-                    if cuadro.mostrar or cuadro.descubierto:
-                        continue
-                    if x1 is None and y1 is None:
-                        x1 = x
-                        y1 = y
-                        cuadros[y1][x1].mostrar = True
-                        pygame.mixer.Sound.play(sonido_voltear)
-                    else:
-                        x2 = x
-                        y2 = y
-                        cuadros[y2][x2].mostrar = True
-                        cuadro1 = cuadros[y1][x1]
-                        cuadro2 = cuadros[y2][x2]
-                        if cuadro1.fuente_imagen == cuadro2.fuente_imagen:
-                            cuadros[y1][x1].descubierto = True
-                            cuadros[y2][x2].descubierto = True
-                            x1 = None
-                            x2 = None
-                            y1 = None
-                            y2 = None
-                            pygame.mixer.Sound.play(sonido_clic)
-                        else:
-                            pygame.mixer.Sound.play(sonido_fracaso)
-                            ultimos_segundos = int(time.time())
-                            puede_jugar = False
-                    comprobar_si_gana()
+                    if not juego_iniciado:  # Si el juego no ha comenzado
+                        continue  # Saltar el resto del código y continuar con el siguiente evento
+                    x = math.floor(xAbsoluto / MEDIDA_CUADRO)  # Calcular la posición en la cuadrícula (columna)
+                    y = math.floor(yAbsoluto / MEDIDA_CUADRO)  # Calcular la posición en la cuadrícula (fila)
+                    cuadro = cuadros[y][x]  # Obtener el cuadro en la posición clicada
+                    if cuadro.mostrar or cuadro.descubierto:  # Si el cuadro ya está mostrando o descubierto
+                        continue  # Saltar el resto del código y continuar con el siguiente evento
+                    if x1 is None and y1 is None:  # Si no hay primer cuadro seleccionado
+                        x1, y1 = x, y  # Guardar la posición del primer cuadro
+                        cuadros[y1][x1].mostrar = True  # Mostrar el primer cuadro
+                        pygame.mixer.Sound.play(SONIDO_VOLTEAR)  # Reproducir sonido de voltear
+                    else:  # Si ya hay un primer cuadro seleccionado
+                        x2, y2 = x, y  # Guardar la posición del segundo cuadro
+                        cuadros[y2][x2].mostrar = True  # Mostrar el segundo cuadro
+                        cuadro1 = cuadros[y1][x1]  # Obtener el primer cuadro
+                        cuadro2 = cuadros[y2][x2]  # Obtener el segundo cuadro
+                        if cuadro1.fuente_imagen == cuadro2.fuente_imagen:  # Si las imágenes coinciden
+                            cuadro1.descubierto = cuadro2.descubierto = True  # Marcar ambos cuadros como descubiertos
+                            x1 = x2 = y1 = y2 = None  # Resetear las posiciones seleccionadas
+                            pygame.mixer.Sound.play(SONIDO_CLIC)  # Reproducir sonido de éxito
+                        else:  # Si las imágenes no coinciden
+                            pygame.mixer.Sound.play(SONIDO_FRACASO)  # Reproducir sonido de fracaso
+                            ultimos_segundos = int(time.time())  # Guardar el tiempo del fallo
+                            puede_jugar = False  # Bloquear el juego hasta ocultar los cuadros
+                    if gana(cuadros):  # Comprobar si se ha ganado el juego
+                        pygame.mixer.Sound.play(SONIDO_EXITO)  # Reproducir sonido de éxito
+                        reiniciar_juego()  # Reiniciar el juego
 
-        ahora = int(time.time())
-        if ultimos_segundos is not None and ahora - ultimos_segundos >= segundos_mostrar_pieza:
-            cuadros[y1][x1].mostrar = False
-            cuadros[y2][x2].mostrar = False
-            x1 = None
-            y1 = None
-            x2 = None
-            y2 = None
-            ultimos_segundos = None
-            puede_jugar = True
+        ahora = int(time.time())  # Obtener el tiempo actual
+        if ultimos_segundos is not None and ahora - ultimos_segundos >= SEGUNDOS_MOSTRAR_PIEZA:
+            # Si ha pasado el tiempo de mostrar las piezas incorrectas
+            cuadros[y1][x1].mostrar = cuadros[y2][x2].mostrar = False  # Ocultar los cuadros
+            x1 = y1 = x2 = y2 = None  # Resetear las posiciones seleccionadas
+            ultimos_segundos = None  # Resetear el contador de tiempo
+            puede_jugar = True  # Permitir jugar de nuevo
 
-        pantalla_juego.fill(color_blanco)
-        x = 0
-        y = 0
-        for fila in cuadros:
-            x = 0
-            for cuadro in fila:
-                if cuadro.descubierto or cuadro.mostrar:
-                    pantalla_juego.blit(cuadro.imagen_real, (x, y))
-                else:
-                    pantalla_juego.blit(imagen_oculta, (x, y))
-                x += medida_cuadro
-            y += medida_cuadro
+        # Dibujar la pantalla del juego
+        pantalla_juego.fill(CAVERN_PINK)  # Rellenar la pantalla con color blanco
+        for y, fila in enumerate(cuadros):  # Recorrer las filas de cuadros
+            for x, cuadro in enumerate(fila):  # Recorrer los cuadros en cada fila
+                imagen = cuadro.imagen_real if cuadro.descubierto or cuadro.mostrar else IMAGEN_OCULTA
+                # Elegir la imagen a mostrar (real o oculta)
+                pantalla_juego.blit(imagen, (x * MEDIDA_CUADRO, y * MEDIDA_CUADRO))
+                # Dibujar la imagen en la pantalla
 
-        if juego_iniciado:
-            pygame.draw.rect(pantalla_juego, color_blanco, boton)
-            pantalla_juego.blit(fuente.render("Iniciar Juego", True, color_gris), (xFuente, yFuente))
-        else:
-            pygame.draw.rect(pantalla_juego, color_azul, boton)
-            pantalla_juego.blit(fuente.render("Iniciar Juego", True, color_blanco), (xFuente, yFuente))
+        # Dibujar el botón
+        color_boton = PAARL if not juego_iniciado else PAARL  # Elegir el color del botón
+        texto_boton = FUENTE.render("Iniciar Juego" if not juego_iniciado else "Juego en Progreso", True, CAVERN_PINK)
+        # Elegir el texto del botón
+        pygame.draw.rect(pantalla_juego, color_boton, boton)  # Dibujar el botón
+        pantalla_juego.blit(texto_boton, (xFuente, yFuente))  # Dibujar el texto del botón
 
-        pygame.display.update()
+        pygame.display.update()  # Actualizar la pantalla para mostrar los cambios
+
+if __name__ == "__main__":
+    main()
