@@ -20,21 +20,3 @@ def main():
     # Imprimimos las Listas
     print("Lista aleatoria: ", lista_aleatoria)
     print("Lista Predeterminada: ", lista_pred)
-
-"""
-def ListasYNumerosAleatorios():
-    print("hola")
-
-    
-    for i in range(3):
-        Numero = int(input("Numero a insertar en la Lista: "))
-        ListaUsuario.append(Numero)
-
-ListaUsuario = []
-ListaPred = [2,5,7]
-
-ListasYNumerosAleatorios()
-
-print("Lista de usuario: ", ListaUsuario)
-print("Lista predeterminada: ", ListaPred)
-"""
