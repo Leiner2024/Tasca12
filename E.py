@@ -34,6 +34,3 @@ def main():
     # Itera sobre la lista de animales y muestra sus detalles
     for e in l:
         print("{} tiene {} años y dice {}".format(e.nombre, e.edad, e.sonido()))
-
-# Llama a la función principal
-main()
