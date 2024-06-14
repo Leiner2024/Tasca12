@@ -23,4 +23,5 @@ def main():
         print("El precio más bajo del día fue:", dades["data"][0]["low"], "€")
         print("Día:", dades["data"][0]["date"])
     else:
+        # Si el código de estado no es 200, imprime un mensaje de error.
         print("No hay datos.")
