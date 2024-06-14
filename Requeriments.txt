@@ -1,0 +1,29 @@
+Pasos a hacer antes:
+  1. Abrir Terminal y Actualizar el sistema::
+
+sudo apt update
+sudo apt upgrade
+
+  2. Instalar pip:
+
+sudo apt install python3-pip
+
+  3. Instalar Pygame:
+
+pip3 install pygame
+
+######################################
+2do paso a hacer:
+
+  1. Abrir Terminal y Actualizar el sistema::
+
+sudo apt update
+sudo apt upgrade
+
+  2. Instalar pip:
+
+sudo apt install python3-pip
+
+  3. Instalar Flask:
+
+pip3 install Flask
